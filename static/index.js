@@ -446,7 +446,7 @@ $(document).ready(() => {
         e: $(".guy.player"),
         bulletType: PlayerBullet,
         bulletDamage: 0.002,
-        bulletBlam: 2,
+        bulletBlam: 5,
         bulletTags: ["playerBullet"],
         fireRate: 5.0,
         angularSpeed: 2.5,
