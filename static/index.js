@@ -116,6 +116,7 @@ class Shooty extends GameObject {
             bulletType: FlyingBullet,
             bulletSpeed: 100.0, // Speed at which a bullet flies out
             shooting: false,
+            healthbar: options.e.find(".health"),
             ...options
         })
         this.bulletTime = 1.0/this.fireRate
@@ -139,6 +140,7 @@ class Shooty extends GameObject {
     render(g) {
         super.render(g)
         this.e.css("--health", this.health);
+        this.healthbar.css("--health", `${this.health*100}%`);
     }
     shoot(g, angle) {
         const options = {
@@ -146,6 +148,7 @@ class Shooty extends GameObject {
             y: this.middle.y,
             dx: this.bulletSpeed*Math.cos(angle),
             dy: this.bulletSpeed*Math.sin(angle),
+            damage: this.bulletDamage, // Likely to be undefined
         }
         //console.log(angle, this.middle, this.bulletSpeed, options)
         const bullet = g.add(this.bulletType, options)
@@ -156,7 +159,6 @@ class Player extends Shooty {
     constructor(g, options) {
         super(g, {
             tags: ["player"], 
-            fireRate: 10.0, // Bullets per second
             angularSpeed: 1, // Radians per second
             shooting: false,
             ...options
@@ -166,12 +168,12 @@ class Player extends Shooty {
             this.x = ev.clientX - g.r.left - this.width/2;
             this.y = ev.clientY - g.r.top - this.width/2;
         }).on("mousedown", (ev) => {
+            if (event.which !== 1) return;
             this.shooting = true
         }).on("mouseup", (ev) => {
+            if (event.which !== 1) return;
             this.shooting = false
         })
-    }
-    stun() {
     }
     tick(g) {
         super.tick(g)
@@ -181,7 +183,6 @@ class Player extends Shooty {
     shoot(g) {
         super.shoot(g, scale(this.angle/Math.PI, Math.PI*(5/4), Math.PI*(7/4)))
     }
-    // TODO: Die and restart logic
 }
 class Boss extends Shooty {
     angle=0
@@ -189,7 +190,6 @@ class Boss extends Shooty {
         super(g, {
             angularSpeed: 1, // Radians per second
             audio: options.e,
-            fireRate: 40.0, // Bullets per second
             bulletType: FlyingBullet,
             tags: ["boss"],
             playing: false,
@@ -251,6 +251,7 @@ class FlyingBullet extends GameObject {
             e: $(`<div class="bullet ${options.team}"></div>`),
             countdown: 15,
             bounceTime: 2,
+            damage: 0.11,
             ...options
         });
         this.dx = options.dx
@@ -392,21 +393,25 @@ $(document).ready(() => {
 
     const player = window.player = game.add(Player, {
         e: $(".player"),
+        fireRate: 5.0,
         bulletType: PlayerBullet,
-        angularSpeed: 5,
+        bulletDamage: 0.005,
+        angularSpeed: 2.5,
     })
     const boss = window.blue = game.add(Boss, {
         e: $(".band.boss"),
         bulletType: BossBullet,
-        audio: $("audio.band.boss"),
+        audio: $(".band.boss audio"),
+        fireRate: 10.0,
+        bulletDamage: 0.1,
         angularSpeed: -5,
         maxVolume: 1,
     })
 
     const guyBullet = (guy, bullet) => {
-        game.blam(bullet, 30);
+        game.blam(bullet, bullet.damage*400);
         bullet.destroy();
-        guy.damage(0.11);
+        guy.damage(bullet.damage);
     }
     const guyTutorial = (guy, thing) => {
         guy.stun(0.1);
@@ -417,7 +422,6 @@ $(document).ready(() => {
     game.onCollide("boss", "playerBullet", guyBullet)
     game.onCollide("player", "bossBullet", guyBullet)
 	game.onCollide("player", "band", playerBand)
-    //game.onCollide("player", "tutorialBullet", guyTutorial);
     const start = () => {
         $(document).off("mousedown", start)
         $(document).off("keydown", start)

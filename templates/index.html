@@ -13,8 +13,12 @@
     FPS: <span class="fps">--</span>
 </div>
 <div class="game">
-    <!--<audio class="band tutorial game-object" src="{{ url_for("static", filename="sound/4t.mp3") }}" autoplay controls loop></audio>-->
-    <audio class="band boss" src="{{ url_for("static", filename="sound/switch.mp3") }}" autoplay controls></audio>
-    <div class="player"></div>
+    <div class="band boss">
+        <div class="healthbar"><div class="health"></div></div>
+        <audio src="{{ url_for("static", filename="sound/switch.mp3") }}"></audio>
+    </div>
+    <div class="player">
+        <div class="healthbar"><div class="health"></div></div>
+    </div>
 </div>
 {% endblock %}

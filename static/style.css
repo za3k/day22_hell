@@ -4,11 +4,10 @@
     width: 10px;
     height: 10px;
     background-color: red;
-    /*visibility: hidden;*/
 }
 
-.bullet.tutorial {
-    transform: rotate(45deg);
+.bullet.player {
+    transform: scaleX(0.5) rotate(45deg);
 }
 .bullet.boss {
     border-radius: 3px;
@@ -37,29 +36,47 @@
     background-color: green;
 }
 
-.band {
+.band.boss {
     --height: 61px;
     --width: 500px;
+    --health: 1;
+    border: 10px solid;
+    border-radius: 40px;
     height: var(--height);
     width: var(--width);
     top: calc(50% - var(--height)/2);
-    border: 10px solid;
-    border-radius: 40px;
-}
-
-.band.tutorial {
-    left: calc(33% - var(--width)/2);
-}
-
-.band.boss {
-    --health: 1;
     left: calc(50% - var(--width)/2);
-    border-color: rgba(calc(var(--health)*255), 5, 5, calc(0.5+(var(--health)/2)));
+    border-color: rgb(0, 0, calc(var(--health)*255), calc(var(--health)/2 + 0.5) );
+    text-align: center;
     /*width: 100px;*/
 }
 
-.debug {
-    /*display: none;*/
+.healthbar {
+    height: 10px;
+    border-radius: 10px;
+    background-color: red;
+}
+.healthbar .health {
+    --health: 1;
+    width: var(--health);
+    background-color: green;
+    height: 100%;
+    border-radius: inherit;
+}
+.healthbar::after {
+    content: var(--health);
+}
+
+.boss .healthbar {
+    display: inline-block;
+    width: 80%;
+}
+
+.player .healthbar {
+    width: 300%;
+    position: relative;
+    top: 60px;
+    left: -100%;
 }
 
 /* -- All Hack-A-Day projects -- */
