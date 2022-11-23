@@ -11,13 +11,18 @@
     Game objects: <span class="object-counter">--</span>
     <!--Frames: <span class="frame-counter">--</span>-->
     FPS: <span class="fps">--</span>
+    <!--
+    X: <span class="x">--</span>
+    A: <span class="a">--</span>
+    -->
 </div>
 <div class="game">
-    <div class="band boss">
+    <div class="guy boss">
         <div class="healthbar"><div class="health"></div></div>
+        <canvas></canvas>
         <audio src="{{ url_for("static", filename="sound/switch.mp3") }}"></audio>
     </div>
-    <div class="player">
+    <div class="guy player">
         <div class="healthbar"><div class="health"></div></div>
     </div>
 </div>

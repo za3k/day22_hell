@@ -4,6 +4,7 @@ function random_float(min, max) { return scale(Math.random(), min, max) }
 function random_int(min, max) { return Math.floor(random_float(min, max)); }
 function direction(rad, speed) { return {dx: Math.cos(rad)*speed, dy: Math.sin(rad)*speed } }
 function random_direction(speed) { return direction(random_float(0, 2*Math.PI), speed) }
+function movingAverage(x, a, f) { return x*(1.0/f) + a*(1-1.0/f); }
 function random_color() {
     const red = random_float(0, 255);
     const green = random_float(0, 255);
@@ -134,7 +135,7 @@ class Shooty extends GameObject {
         if (this.health <= 0) return this.die(g);
         this.timeSinceBullet += g.elapsed;
         if (this.shooting && this.timeSinceBullet > this.bulletTime) {
-            this.timeSinceBullet -= this.bulletTime
+            this.timeSinceBullet = 0
             this.shoot(g)
         }
     }
@@ -150,6 +151,7 @@ class Shooty extends GameObject {
             dx: this.bulletSpeed*Math.cos(angle),
             dy: this.bulletSpeed*Math.sin(angle),
             damage: this.bulletDamage, // Likely to be undefined
+            blam: this.bulletBlam,
             tags: this.bulletTags,
         }
         //console.log(angle, this.middle, this.bulletSpeed, options)
@@ -160,7 +162,6 @@ class Player extends Shooty {
     angle = 0
     constructor(g, options) {
         super(g, {
-            tags: ["player"], 
             angularSpeed: 1, // Radians per second
             shooting: false,
             ...options
@@ -188,16 +189,19 @@ class Player extends Shooty {
 }
 class Boss extends Shooty {
     angle=0
+    movingAverage = 999
     constructor(g, options) {
         super(g, {
             angularSpeed: 1, // Radians per second
-            audio: options.e,
+            audio: options.e.find("audio"),
             bulletType: FlyingBullet,
-            tags: ["boss"],
             playing: false,
+            canvas: options.e.find("canvas"),
             ...options,
         })
         this.bulletTime = 1.0/this.fireRate
+        this.canvas[0].width = this.canvas.width()
+        this.canvas[0].height = this.canvas.height()
 
         this.audio[0].volume = this.maxVolume;
         this.audio.on("play", () => {
@@ -220,13 +224,59 @@ class Boss extends Shooty {
     tick(g) {
         this.shooting = this.playing;
         super.tick(g);
-        if (!this.paused) {
+        if (this.playing) {
             this.angle += this.angularSpeed * g.elapsed;
+            this.updateVisuals();
         }
-        this.audio[0].volume = this.maxVolume * Math.max(0, this.health);
+        //this.audio[0].volume = this.maxVolume * Math.max(0, this.health);
+    }
+    updateVisuals() {
+        this.analyser.fftSize = 2048;
+        const bufferLength = this.analyser.frequencyBinCount;
+        const dataArray = new Uint8Array(bufferLength);
+        this.analyser.getByteTimeDomainData(dataArray);
+
+        const WIDTH=this.canvas[0].width, HEIGHT=this.canvas[0].height;
+        const canvasCtx = this.canvas[0].getContext("2d");
+        canvasCtx.clearRect(0, 0, WIDTH, HEIGHT);
+        canvasCtx.fillStyle = "rgb(200, 200, 200)";
+        canvasCtx.lineWidth = 2;
+        canvasCtx.strokeStyle = "rgb(0, 0, 0)";
+        canvasCtx.beginPath();
+        const sliceWidth = WIDTH / bufferLength;
+        let x = 0;
+        for (let i = 0; i < bufferLength; i++) {
+            const v = dataArray[i] / 128.0;
+            const y = v * (HEIGHT / 2);
+            if (i === 0) {
+                canvasCtx.moveTo(x, y);
+            } else {
+                canvasCtx.lineTo(x, y);
+            }
+            x += sliceWidth;
+        }
+        canvasCtx.lineTo(WIDTH, HEIGHT / 2);
+        canvasCtx.stroke();
+    }
+    shouldShoot() {
+        // Check audio analyser
+        this.analyser.fftSize = 2048;
+        const bufferLength = this.analyser.frequencyBinCount;
+        const dataArray = new Uint8Array(bufferLength);
+        this.analyser.getByteTimeDomainData(dataArray);
+        let total = 0;
+        for (let i = 0; i < bufferLength; i++) total = Math.max(total, Math.abs(dataArray[i]-128));
+        // total += (dataArray[i]-128)*(dataArray[i]-128);
+        //return total > 300000;
+        this.movingAverage = movingAverage(this.movingAverage, total, 100)
+        $(".x").text(total);
+        $(".a").text(this.movingAverage-total);
+        return total > this.movingAverage * 1.0005;
     }
     shoot(g) {
-        super.shoot(g, this.angle)
+        if (this.shouldShoot()) {
+            super.shoot(g, this.angle)
+        }
     }
 }
 
@@ -254,6 +304,7 @@ class FlyingBullet extends GameObject {
             countdown: 15,
             bounceTime: 2,
             damage: 0.11,
+            blam: 5,
             ...options
         });
         this.dx = options.dx
@@ -322,7 +373,7 @@ class Game {
     tags = {} // Lookup from string -> ObjectSet
     constructor() {
         this.lastUpdate = Date.now()
-        $('<style>.game > * { position: absolute; }</style>').appendTo("html > head")
+        $('<style>.game { user-select: none } .game > * { position: absolute; }</style>').appendTo("html > head")
     }
     add(cls, args) {
         const o = new cls(this, {id: this.nextId++, ...args})
@@ -392,26 +443,29 @@ $(document).ready(() => {
     const game = window.game = new Game();
 
     const player = window.player = game.add(Player, {
-        e: $(".player"),
-        fireRate: 5.0,
+        e: $(".guy.player"),
         bulletType: PlayerBullet,
-        bulletDamage: 0.005,
+        bulletDamage: 0.002,
+        bulletBlam: 2,
         bulletTags: ["playerBullet"],
+        fireRate: 5.0,
         angularSpeed: 2.5,
+        tags: ["player"],
     })
     const boss = window.blue = game.add(Boss, {
-        e: $(".band.boss"),
-        bulletType: BossBullet,
-        audio: $(".band.boss audio"),
-        fireRate: 10.0,
-        bulletDamage: 0.1,
-        bulletTags: ["bossBullet"],
-        angularSpeed: -5,
+        e: $(".guy.boss"),
         maxVolume: 1,
+        bulletType: BossBullet,
+        bulletDamage: 0.05,
+        bulletBlam: 20,
+        bulletTags: ["bossBullet"],
+        fireRate: 40.0,
+        angularSpeed: -4,
+        tags: ["boss"],
     })
 
     const guyBullet = (guy, bullet) => {
-        game.blam(bullet, bullet.damage*400);
+        game.blam(bullet, bullet.blam);
         bullet.destroy();
         guy.damage(bullet.damage);
     }
