@@ -478,8 +478,13 @@ $(document).ready(() => {
     const start = () => {
         $(document).off("mousedown", start)
         $(document).off("keydown", start)
-        game.run()
-        boss.audio[0].play()
+        $(".clickme").remove();
+        $(".prepare").show();
+        setTimeout(() => {
+            $(".prepare").remove();
+            game.run()
+            boss.audio[0].play()
+        }, 3000);
     }
     $(document).on("mousedown", start)
     $(document).on("keydown", start)

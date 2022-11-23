@@ -22,6 +22,41 @@
     height: 24px;
 }
 
+.info {
+    position: absolute;
+    top: 60%;
+    left: 40%;
+    width: 20%;
+    height: 100px;
+        
+    line-height: 100px;
+    text-align: center;
+    font-size: 24pt;
+
+    border: 2px solid grey;
+    border-radius: 20px;
+
+    z-index: 2;
+    background-color: white;
+}
+.info.clickme {
+    filter: drop-shadow(10px 10px 4px darkgrey);
+}
+.info.prepare {
+    border: dashed;
+    animation: blink 1s;
+    animation-iteration-count: 3;
+    z-index: 1;
+    display: none;
+    box-shadow: 0 0 5px 5px red;
+}
+@keyframes blink {
+    50% {
+        opacity: 0.2;
+        box-shadow: 0 0 0 0 red;
+    }
+}
+
 .guy.player {
     --width: 5vh;
     --height: 5vh;
