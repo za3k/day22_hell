@@ -1,0 +1,20 @@
+{% extends 'base2.html' %}
+
+{% block header %}
+    <h3>{% block title %}{{ project_name }}{% endblock %}</h3>
+    {{ description }}. {{ instructions | safe }}
+    <script src="{{ url_for('static', filename='index.js') }}"></script>
+{% endblock %}
+
+{% block content %}
+<div class="debug">
+    Game objects: <span class="object-counter">--</span>
+    <!--Frames: <span class="frame-counter">--</span>-->
+    FPS: <span class="fps">--</span>
+</div>
+<div class="game">
+    <!--<audio class="band tutorial game-object" src="{{ url_for("static", filename="sound/4t.mp3") }}" autoplay controls loop></audio>-->
+    <audio class="band boss" src="{{ url_for("static", filename="sound/switch.mp3") }}" autoplay controls></audio>
+    <div class="player"></div>
+</div>
+{% endblock %}
