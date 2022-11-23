@@ -13,7 +13,7 @@ load_info({
     "source_url": "https://github.com/za3k/day22_hell",
     "subdir": "/hackaday/hell",
     "description": "Dodge bullets from the music visualizer",
-    "instructions": "Control with your keyboard or mouse.",
+    "instructions": "Control with your keyboard or mouse. To make the game harder, reduce your window size.",
     "login": False,
     "fullscreen": True,
 })

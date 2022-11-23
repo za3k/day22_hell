@@ -1,28 +1,17 @@
 /* -- This specific Hack-A-Day project -- */
-
-.bullet {
-    width: 10px;
-    height: 10px;
-    background-color: red;
-}
-
-.bullet.player {
-    transform: scaleX(0.5) rotate(45deg);
-}
-.bullet.boss {
-    border-radius: 3px;
-}
-
-.poof {
-    width: 10px;
-    height: 10px;
-    border-radius: 100%;
-}
-.game {
-    position: relative;
-    width: 100%;
-    height: 100%;
-    overflow: hidden;
+.band.boss {
+    --height: 61px;
+    --width: 200px;
+    --health: 1;
+    border: 10px solid;
+    border-radius: 40px;
+    height: var(--height);
+    width: var(--width);
+    top: calc(20% - var(--height)/2);
+    left: calc(50% - var(--width)/2);
+    border-color: rgb(0, 0, calc(var(--health)*255), calc(var(--health)/2 + 0.5) );
+    text-align: center;
+    /*width: 100px;*/
 }
 
 .player:not(.bullet) {
@@ -34,21 +23,6 @@
     height: var(--height);
     width: var(--width);
     background-color: green;
-}
-
-.band.boss {
-    --height: 61px;
-    --width: 500px;
-    --health: 1;
-    border: 10px solid;
-    border-radius: 40px;
-    height: var(--height);
-    width: var(--width);
-    top: calc(50% - var(--height)/2);
-    left: calc(50% - var(--width)/2);
-    border-color: rgb(0, 0, calc(var(--health)*255), calc(var(--health)/2 + 0.5) );
-    text-align: center;
-    /*width: 100px;*/
 }
 
 .healthbar {
@@ -78,6 +52,33 @@
     top: 60px;
     left: -100%;
 }
+
+.bullet {
+    width: 10px;
+    height: 10px;
+    background-color: red;
+}
+
+.bullet.player {
+    transform: scaleX(0.5) rotate(45deg);
+}
+.bullet.boss {
+    border-radius: 3px;
+}
+
+.poof {
+    width: 10px;
+    height: 10px;
+    border-radius: 100%;
+}
+.game {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+}
+
+
 
 /* -- All Hack-A-Day projects -- */
 

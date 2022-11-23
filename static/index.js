@@ -128,9 +128,10 @@ class Shooty extends GameObject {
     die(g) {
         g.blam(this, 100);
         this.destroy();
+        if (this.bulletTags.length == 1) g.getTag(this.bulletTags[0]).destroy();
     }
     tick(g) {
-        if (this.health <= 0) this.die(g);
+        if (this.health <= 0) return this.die(g);
         this.timeSinceBullet += g.elapsed;
         if (this.shooting && this.timeSinceBullet > this.bulletTime) {
             this.timeSinceBullet -= this.bulletTime
@@ -149,6 +150,7 @@ class Shooty extends GameObject {
             dx: this.bulletSpeed*Math.cos(angle),
             dy: this.bulletSpeed*Math.sin(angle),
             damage: this.bulletDamage, // Likely to be undefined
+            tags: this.bulletTags,
         }
         //console.log(angle, this.middle, this.bulletSpeed, options)
         const bullet = g.add(this.bulletType, options)
@@ -292,7 +294,6 @@ class BossBullet extends FlyingBullet {
         super(g, {
             team: "boss",
             color: random_color_blue(),
-            tags: ["bossBullet"], 
             ...options
         });
     }
@@ -300,7 +301,6 @@ class BossBullet extends FlyingBullet {
 class PlayerBullet extends FlyingBullet {
     constructor(g, options) {
         super(g, {
-            tags: ["playerBullet"], 
             team: "player",
             color: random_color_red(),
             bounceTime: 1000,
@@ -396,6 +396,7 @@ $(document).ready(() => {
         fireRate: 5.0,
         bulletType: PlayerBullet,
         bulletDamage: 0.005,
+        bulletTags: ["playerBullet"],
         angularSpeed: 2.5,
     })
     const boss = window.blue = game.add(Boss, {
@@ -404,6 +405,7 @@ $(document).ready(() => {
         audio: $(".band.boss audio"),
         fireRate: 10.0,
         bulletDamage: 0.1,
+        bulletTags: ["bossBullet"],
         angularSpeed: -5,
         maxVolume: 1,
     })
@@ -413,15 +415,12 @@ $(document).ready(() => {
         bullet.destroy();
         guy.damage(bullet.damage);
     }
-    const guyTutorial = (guy, thing) => {
-        guy.stun(0.1);
-    }
-	const playerBand = (player, band) => {
-		player.die();
+	const playerBoss = (player, boss) => {
+		player.die(game);
 	}
     game.onCollide("boss", "playerBullet", guyBullet)
     game.onCollide("player", "bossBullet", guyBullet)
-	game.onCollide("player", "band", playerBand)
+	game.onCollide("player", "boss", playerBoss)
     const start = () => {
         $(document).off("mousedown", start)
         $(document).off("keydown", start)
