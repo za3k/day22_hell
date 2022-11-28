@@ -445,7 +445,7 @@ $(document).ready(() => {
     const player = window.player = game.add(Player, {
         e: $(".guy.player"),
         bulletType: PlayerBullet,
-        bulletDamage: 0.002,
+        bulletDamage: 0.0035,
         bulletBlam: 5,
         bulletTags: ["playerBullet"],
         fireRate: 5.0,
